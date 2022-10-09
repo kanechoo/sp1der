@@ -21,14 +21,14 @@ var wg = sync.WaitGroup{}
 func main() {
 	defer timer("main")()
 	// start url distribute
-	d := distributor.Distributor[distributor.QueryParams]{}
+	d := distributor.Distributor[string]{}
 	var max = 0
-	d.NextQueryParams(func() (bool, distributor.QueryParams) {
+	d.NextQueryParams(func() (bool, string) {
 		if max < 10 {
 			max++
-			return true, distributor.QueryParams{Url: fmt.Sprintf("https://m.weather.com.cn/mweather/101280101.shtml?s=%d", max)}
+			return true, fmt.Sprintf("https://m.weather.com.cn/mweather/101280101.shtml?s=%d", max)
 		}
-		return false, distributor.QueryParams{}
+		return false, ""
 	}).Target(&channel.UrlChannel).Run()
 	//start to process extract result
 	processor := process.Processor[[]byte]{}
@@ -44,17 +44,13 @@ func main() {
 		return x
 	}).Run()
 	//start all executor
-	executor := task.Executor[distributor.QueryParams, []byte]{}
+	executor := task.HttpExecutor{}
 	executor.HttpClient(
 		util.DefaultHttpClient()).
 		ParallelSize(10).
 		Sync(&wg).
 		Source(&channel.UrlChannel).
-		Target(&channel.ExecutorResultChannel).Build().S(func(s *distributor.QueryParams) *string {
-		return &s.Url
-	}).T(func(b *[]byte) *[]byte {
-		return b
-	}).Run()
+		Target(&channel.ExecutorResultChannel).Run()
 	wg.Wait()
 }
 func timer(name string) func() {

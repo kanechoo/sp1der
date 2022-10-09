@@ -41,7 +41,7 @@ func (doc *Doc) Result() *[]models.Selector {
 		return &empty
 	}
 	for i := range doc.selectors {
-		doc.doc.Find((doc.selectors)[i].Query).Each(func(j int, selection *goquery.Selection) {
+		doc.doc.Find((doc.selectors)[i].SelectorQuery).Each(func(j int, selection *goquery.Selection) {
 			fmt.Println(selection)
 			for k := range (doc.selectors)[i].Indexes {
 				if (doc.selectors)[i].Indexes[k] == j {

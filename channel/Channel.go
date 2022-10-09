@@ -1,6 +1,4 @@
 package channel
 
-import "sp1der/distributor"
-
-var UrlChannel = make(chan distributor.QueryParams, 20)
+var UrlChannel = make(chan string, 20)
 var ExecutorResultChannel = make(chan []byte, 10)

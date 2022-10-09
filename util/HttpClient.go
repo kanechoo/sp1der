@@ -15,7 +15,7 @@ func DefaultHttpClient() *http.Client {
 	}
 	return client
 }
-func DefaultHttpGet(client *http.Client, url string) *[]byte {
+func HttpGet(client *http.Client, url string) *[]byte {
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
 	r.Header.Set("Referer", "https://m.weather.com.cn/")
