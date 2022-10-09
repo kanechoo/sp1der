@@ -2,17 +2,15 @@ package models
 
 var (
 	Title = Selector{
-		SelectorQuery: ".h15 .weaword td",
+		SelectorQuery: "a.topic-link",
 		Attr:          "",
 		Text:          nil,
-		AttrVal:       "",
-		Indexes:       []int{0, 1, 2, 3, 4, 5},
+		AttrVal:       nil,
 	}
 	Footer = Selector{
-		SelectorQuery: ".weatherCardTop ul li.cur span",
+		SelectorQuery: "a.count_livid",
 		Attr:          "",
-		AttrVal:       "",
+		AttrVal:       nil,
 		Text:          nil,
-		Indexes:       []int{0},
 	}
 )

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"sp1der/channel"
 	"sp1der/distributor"
@@ -12,10 +13,6 @@ import (
 	"time"
 )
 
-const (
-	maxC = 10
-)
-
 var wg = sync.WaitGroup{}
 
 func main() {
@@ -24,33 +21,25 @@ func main() {
 	d := distributor.Distributor{}
 	var max = 0
 	d.NextUrlFunc(func() string {
-		if max < 10 {
+		if max < 1 {
 			max++
-			return fmt.Sprintf("https://m.weather.com.cn/mweather/101280101.shtml?s=%d", max)
+			println(fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max))
+			return fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max)
 		}
 		return ""
-	}).Target(&channel.UrlChannel).Run()
-	//start to process extract result
-	processor := process.Processor[[]byte]{}
-	//my processor
-	processor.Source(&channel.HttpExecutorResultChannel).ParallelSize(10).Sync(&wg).
-		Processor(func(x *[]byte, t *process.Transport) *process.Transport {
-			doc := Doc{}
-			result := doc.FromBytes(x).AddSelectors(&models.Title, &models.Footer).Result()
-			t.Data = result
-			return t
-		}).NextProcessor(func(x *process.Transport) *process.Transport {
-		fmt.Printf("%v \n", x.Data.(*[]models.Selector))
-		return x
-	}).Run()
+	}).Target(&channel.HttpUrl).Run()
 	//start all executor
 	executor := task.HttpExecutor{}
-	executor.HttpClient(
-		util.DefaultHttpClient()).
-		ParallelSize(10).
-		Sync(&wg).
-		Source(&channel.UrlChannel).
-		Target(&channel.HttpExecutorResultChannel).Run()
+	executor.HttpClient(util.DefaultHttpClient()).ParallelSize(10).Sync(&wg).Url(&channel.HttpUrl).FetchToDoc(&channel.HtmlDoc).Run()
+	//start to process extract result
+	processor := process.Processor{}
+	//my processor
+	processor.Source(&channel.HtmlDoc).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
+		doc := Doc{}
+		result := doc.parse2DocFromBytes(s).AddSelectors(&models.Title, &models.Footer).Result()
+		marshal, _ := json.Marshal(result)
+		fmt.Printf("%s\v", string(marshal))
+	})
 	wg.Wait()
 }
 func timer(name string) func() {

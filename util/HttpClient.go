@@ -3,12 +3,18 @@ package util
 import (
 	"io"
 	"net/http"
+	"net/url"
 )
 
 func DefaultHttpClient() *http.Client {
+	proxy, err := url.Parse("http://127.0.0.1:1087")
+	if nil != err {
+		panic(err)
+	}
 	tr := &http.Transport{
 		DisableKeepAlives:  false,
 		DisableCompression: true,
+		Proxy:              http.ProxyURL(proxy),
 	}
 	client := &http.Client{
 		Transport: tr,

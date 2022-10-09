@@ -15,7 +15,7 @@ type HttpExecutor struct {
 	sourceChan   *chan string
 }
 
-func (e *HttpExecutor) Source(source *chan string) *HttpExecutor {
+func (e *HttpExecutor) Url(source *chan string) *HttpExecutor {
 	e.sourceChan = source
 	return e
 }
@@ -23,15 +23,15 @@ func (e *HttpExecutor) HttpClient(httpClient *http.Client) *HttpExecutor {
 	e.httpClient = httpClient
 	return e
 }
-func (e *HttpExecutor) ParallelSize(size int) *HttpExecutor {
-	e.parallelSize = &size
+func (e *HttpExecutor) ParallelSize(parallelSize int) *HttpExecutor {
+	e.parallelSize = &parallelSize
 	return e
 }
 func (e *HttpExecutor) Sync(wg *sync.WaitGroup) *HttpExecutor {
 	e.wg = wg
 	return e
 }
-func (e *HttpExecutor) Target(targetChan *chan []byte) *HttpExecutor {
+func (e *HttpExecutor) FetchToDoc(targetChan *chan []byte) *HttpExecutor {
 	e.targetChan = targetChan
 	return e
 }

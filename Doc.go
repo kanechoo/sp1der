@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"sp1der/models"
 )
@@ -12,7 +11,7 @@ type Doc struct {
 	selectors []models.Selector
 }
 
-func (doc *Doc) FromBytes(b *[]byte) *Doc {
+func (doc *Doc) parse2DocFromBytes(b *[]byte) *Doc {
 	reader := bytes.NewReader(*b)
 	d, err := goquery.NewDocumentFromReader(reader)
 	if nil != err {
@@ -42,14 +41,9 @@ func (doc *Doc) Result() *[]models.Selector {
 	}
 	for i := range doc.selectors {
 		doc.doc.Find((doc.selectors)[i].SelectorQuery).Each(func(j int, selection *goquery.Selection) {
-			fmt.Println(selection)
-			for k := range (doc.selectors)[i].Indexes {
-				if (doc.selectors)[i].Indexes[k] == j {
-					(doc.selectors)[i].Text = append((doc.selectors)[i].Text, selection.Text())
-					if (doc.selectors)[i].Attr != "" && "" == doc.selectors[i].AttrVal {
-						(doc.selectors)[i].AttrVal = selection.AttrOr((doc.selectors)[i].Attr, "")
-					}
-				}
+			doc.selectors[i].Text = append(doc.selectors[i].Text, selection.Text())
+			if "" != doc.selectors[i].Attr {
+				doc.selectors[i].AttrVal = append(doc.selectors[i].AttrVal, selection.AttrOr(doc.selectors[i].Attr, ""))
 			}
 		})
 	}
