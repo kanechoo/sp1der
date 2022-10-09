@@ -11,7 +11,7 @@ type Doc struct {
 	selectors []models.Selector
 }
 
-func (doc *Doc) parse2DocFromBytes(b *[]byte) *Doc {
+func (doc *Doc) ToDoc(b *[]byte) *Doc {
 	reader := bytes.NewReader(*b)
 	d, err := goquery.NewDocumentFromReader(reader)
 	if nil != err {

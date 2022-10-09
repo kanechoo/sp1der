@@ -36,7 +36,7 @@ func main() {
 	//my processor
 	processor.Source(&channel.HtmlDoc).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
 		doc := Doc{}
-		result := doc.parse2DocFromBytes(s).AddSelectors(&models.Title, &models.Footer).Result()
+		result := doc.ToDoc(s).AddSelectors(&models.Title, &models.Footer).Result()
 		marshal, _ := json.Marshal(result)
 		fmt.Printf("%s\v", string(marshal))
 	})
