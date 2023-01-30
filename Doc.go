@@ -7,8 +7,8 @@ import (
 )
 
 type Doc struct {
-	doc       *goquery.Document
-	selectors []models.Selector
+	doc           *goquery.Document
+	selectorQuery *models.SelectorQuery
 }
 
 func (doc *Doc) ToDoc(b *[]byte) *Doc {
@@ -24,28 +24,29 @@ func (doc *Doc) Doc(document *goquery.Document) *Doc {
 	doc.doc = document
 	return doc
 }
-func (doc *Doc) AddSelectors(selectors ...*models.Selector) *Doc {
-	for i := range selectors {
-		doc.selectors = append(doc.selectors, *selectors[i])
-	}
+func (doc *Doc) AddSelectorQuery(query models.SelectorQuery) *Doc {
+	doc.selectorQuery = &query
 	return doc
 }
-func (doc *Doc) AddSelector(selector *models.Selector) *Doc {
-	doc.selectors = append(doc.selectors, *selector)
-	return doc
-}
-func (doc *Doc) Result() *[]models.Selector {
-	var empty []models.Selector
-	if len(doc.selectors) <= 0 {
+func (doc *Doc) Result() *[]models.SelectorResult {
+	empty := make([]models.SelectorResult, 0)
+	if nil == doc.selectorQuery {
 		return &empty
 	}
-	for i := range doc.selectors {
-		doc.doc.Find((doc.selectors)[i].SelectorQuery).Each(func(j int, selection *goquery.Selection) {
-			doc.selectors[i].Text = append(doc.selectors[i].Text, selection.Text())
-			if "" != doc.selectors[i].Attr {
-				doc.selectors[i].AttrVal = append(doc.selectors[i].AttrVal, selection.AttrOr(doc.selectors[i].Attr, ""))
+	var list = make([]models.SelectorResult, 0)
+	doc.doc.Find(doc.selectorQuery.ParentSelector).Each(func(i int, selection *goquery.Selection) {
+		var array = make([]models.SelectorValue, 0)
+		for j := 0; j < len(doc.selectorQuery.ItemSelector); j++ {
+			var value string
+			var attr string
+			value = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().Text()
+			if "" != doc.selectorQuery.ItemSelector[j].Attr {
+				attr = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().AttrOr(doc.selectorQuery.ItemSelector[j].Attr, "")
 			}
-		})
-	}
-	return &doc.selectors
+			selectorValue := models.SelectorValue{Name: doc.selectorQuery.ItemSelector[j].Name, Text: value, Attr: attr}
+			array = append(array, selectorValue)
+		}
+		list = append(list, models.SelectorResult{Results: &array})
+	})
+	return &list
 }

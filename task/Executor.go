@@ -11,11 +11,12 @@ type HttpExecutor struct {
 	httpClient   *http.Client
 	targetChan   *chan []byte
 	parallelSize *int
+	sleepTime    *time.Duration
 	wg           *sync.WaitGroup
 	sourceChan   *chan string
 }
 
-func (e *HttpExecutor) Url(source *chan string) *HttpExecutor {
+func (e *HttpExecutor) UrlChannel(source *chan string) *HttpExecutor {
 	e.sourceChan = source
 	return e
 }
@@ -23,7 +24,7 @@ func (e *HttpExecutor) HttpClient(httpClient *http.Client) *HttpExecutor {
 	e.httpClient = httpClient
 	return e
 }
-func (e *HttpExecutor) ParallelSize(parallelSize int) *HttpExecutor {
+func (e *HttpExecutor) ParallelExecutorSize(parallelSize int) *HttpExecutor {
 	e.parallelSize = &parallelSize
 	return e
 }
@@ -31,7 +32,11 @@ func (e *HttpExecutor) Sync(wg *sync.WaitGroup) *HttpExecutor {
 	e.wg = wg
 	return e
 }
-func (e *HttpExecutor) FetchToDoc(targetChan *chan []byte) *HttpExecutor {
+func (e *HttpExecutor) SleepDuration(sleepTime time.Duration) *HttpExecutor {
+	e.sleepTime = &sleepTime
+	return e
+}
+func (e *HttpExecutor) ResultChannel(targetChan *chan []byte) *HttpExecutor {
 	e.targetChan = targetChan
 	return e
 }
@@ -49,7 +54,7 @@ loop:
 		case v := <-*e.sourceChan:
 			res := util.HttpGet(e.httpClient, v)
 			*e.targetChan <- *res
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(*e.sleepTime)
 		case <-time.After(10 * time.Second):
 			break loop
 		}
