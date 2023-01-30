@@ -28,12 +28,12 @@ func (doc *Doc) AddSelectorQuery(query models.SelectorQuery) *Doc {
 	doc.selectorQuery = &query
 	return doc
 }
-func (doc *Doc) Result() *[]models.SelectorResult {
-	empty := make([]models.SelectorResult, 0)
+func (doc *Doc) ToResult() *[]models.Result {
+	empty := make([]models.Result, 0)
 	if nil == doc.selectorQuery {
 		return &empty
 	}
-	var list = make([]models.SelectorResult, 0)
+	var list = make([]models.Result, 0)
 	doc.doc.Find(doc.selectorQuery.ParentSelector).Each(func(i int, selection *goquery.Selection) {
 		var array = make([]models.SelectorValue, 0)
 		for j := 0; j < len(doc.selectorQuery.ItemSelector); j++ {
@@ -46,7 +46,7 @@ func (doc *Doc) Result() *[]models.SelectorResult {
 			selectorValue := models.SelectorValue{Name: doc.selectorQuery.ItemSelector[j].Name, Text: value, Attr: attr}
 			array = append(array, selectorValue)
 		}
-		list = append(list, models.SelectorResult{Results: &array})
+		list = append(list, models.Result{Value: &array})
 	})
 	return &list
 }

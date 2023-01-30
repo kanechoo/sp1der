@@ -1,7 +1,7 @@
 package models
 
-type SelectorResult struct {
-	Results *[]SelectorValue
+type Result struct {
+	Value *[]SelectorValue
 }
 type SelectorValue struct {
 	Name string

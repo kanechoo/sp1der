@@ -41,10 +41,9 @@ func main() {
 	processor.Source(&channel.HtmlDocChannel).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
 		doc := Doc{}
 		result := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
-			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic}}).
-			Result()
+			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic}}).ToResult()
 		for _, selectorResult := range *result {
-			for _, value := range *selectorResult.Results {
+			for _, value := range *selectorResult.Value {
 				print(value.Name + ":" + value.Text)
 				print("\t")
 			}
