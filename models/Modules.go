@@ -1,7 +1,7 @@
 package models
 
 type Selector struct {
-	Name          string
+	Key           string
 	SelectorQuery string
 	Attr          string
 	AttrVal       []string

@@ -28,25 +28,24 @@ func (doc *Doc) AddSelectorQuery(query models.SelectorQuery) *Doc {
 	doc.selectorQuery = &query
 	return doc
 }
-func (doc *Doc) ToResult() *[]models.Result {
-	empty := make([]models.Result, 0)
+func (doc *Doc) ToResult() *[]map[string]string {
+	result := make([]map[string]string, 0)
 	if nil == doc.selectorQuery {
-		return &empty
+		return &result
 	}
-	var list = make([]models.Result, 0)
 	doc.doc.Find(doc.selectorQuery.ParentSelector).Each(func(i int, selection *goquery.Selection) {
-		var array = make([]models.SelectorValue, 0)
+		var mapData = make(map[string]string, 0)
 		for j := 0; j < len(doc.selectorQuery.ItemSelector); j++ {
 			var value string
 			var attr string
 			value = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().Text()
 			if "" != doc.selectorQuery.ItemSelector[j].Attr {
 				attr = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().AttrOr(doc.selectorQuery.ItemSelector[j].Attr, "")
+				mapData[doc.selectorQuery.ItemSelector[j].Key] = attr
 			}
-			selectorValue := models.SelectorValue{Name: doc.selectorQuery.ItemSelector[j].Name, Text: value, Attr: attr}
-			array = append(array, selectorValue)
+			mapData[doc.selectorQuery.ItemSelector[j].Key] = value
 		}
-		list = append(list, models.Result{Value: &array})
+		result = append(result, mapData)
 	})
-	return &list
+	return &result
 }

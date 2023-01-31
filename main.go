@@ -21,7 +21,7 @@ func main() {
 	d := distributor.Distributor{}
 	var max = 0
 	d.NextUrlFunc(func() string {
-		if max < 5 {
+		if max < 1 {
 			max++
 			println(fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max))
 			return fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max)
@@ -42,13 +42,8 @@ func main() {
 		doc := Doc{}
 		result := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
 			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic}}).ToResult()
-		for _, selectorResult := range *result {
-			for _, value := range *selectorResult.Value {
-				print(value.Name + ":" + value.Text)
-				print("\t")
-			}
-			print("\n")
-		}
+		//export result to csv
+		util.ExportToCSV(result, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题"})
 	})
 	wg.Wait()
 }
