@@ -18,34 +18,35 @@ var wg = sync.WaitGroup{}
 func main() {
 	defer timer("main")()
 	// start url distribute
-	d := distributor.Distributor{}
 	var max = 0
-	d.NextUrlFunc(func() string {
+	d := distributor.Distributor{}
+	d.UrlReceivedChannel(&channel.HttpUrlChannel).NextUrlFunc(func() string {
 		if max < 1 {
 			max++
-			println(fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max))
 			return fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max)
 		}
 		return ""
-	}).Target(&channel.HttpUrlChannel).Run()
+	})
 	//start all executor
 	executor := task.HttpExecutor{}
 	executor.HttpClient(util.DefaultHttpClient()).
-		ParallelExecutorSize(3).
+		ParallelExecutorSize(10).
 		SleepDuration(2 * time.Second).
 		Sync(&wg).UrlChannel(&channel.HttpUrlChannel).
 		ResultChannel(&channel.HtmlDocChannel).Run()
 	//start to process extract result
 	processor := process.Processor{}
+	items := make([][]map[string]string, 0)
 	//my processor
 	processor.Source(&channel.HtmlDocChannel).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
 		doc := Doc{}
-		result := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
+		item := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
 			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic, v2ex.Link}}).ToResult()
-		//export result to csv
-		util.ExportToCSV(result, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
+		items = append(items, *item)
 	})
 	wg.Wait()
+	//wait all process done then export csv
+	util.ExportToCSVV2(&items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
 }
 func timer(name string) func() {
 	start := time.Now()

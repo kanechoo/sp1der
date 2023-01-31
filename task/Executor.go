@@ -1,6 +1,7 @@
 package task
 
 import (
+	"fmt"
 	"net/http"
 	"sp1der/util"
 	"sync"
@@ -52,9 +53,9 @@ loop:
 	for {
 		select {
 		case v := <-*e.sourceChan:
-			res := util.HttpGet(e.httpClient, v)
+			fmt.Printf("HttpClient request url : %s\n", v)
+			res := util.HttpGet(e.httpClient, v, *e.sleepTime)
 			*e.targetChan <- *res
-			time.Sleep(*e.sleepTime)
 		case <-time.After(10 * time.Second):
 			break loop
 		}

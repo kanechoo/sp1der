@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
+	"time"
 )
 
 func DefaultHttpClient() *http.Client {
@@ -21,10 +23,11 @@ func DefaultHttpClient() *http.Client {
 	}
 	return client
 }
-func HttpGet(client *http.Client, url string) *[]byte {
+func HttpGet(client *http.Client, url string, sleepTime time.Duration) *[]byte {
+	time.Sleep(sleepTime)
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
-	r.Header.Set("Referer", "https://m.weather.com.cn/")
+	r.Header.Set("Referer", parseRefererFromUrl(url))
 	r.Header.Set("Content-Type", "text/html")
 	if nil != err {
 		panic(err)
@@ -39,4 +42,8 @@ func HttpGet(client *http.Client, url string) *[]byte {
 		panic(err)
 	}
 	return &b
+}
+func parseRefererFromUrl(url string) string {
+	re := regexp.MustCompile(`^(https?://[^/]+)/`)
+	return re.FindStringSubmatch(url)[1]
 }
