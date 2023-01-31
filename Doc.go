@@ -39,11 +39,23 @@ func (doc *Doc) ToResult() *[]map[string]string {
 			var value string
 			var attr string
 			value = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().Text()
-			if "" != doc.selectorQuery.ItemSelector[j].Attr {
-				attr = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().AttrOr(doc.selectorQuery.ItemSelector[j].Attr, "")
-				mapData[doc.selectorQuery.ItemSelector[j].Key] = attr
+			if "" != doc.selectorQuery.ItemSelector[j].TextPrefix {
+				value = doc.selectorQuery.ItemSelector[j].TextPrefix + value
+			}
+			if "" != doc.selectorQuery.ItemSelector[j].TextSuffix {
+				value = value + doc.selectorQuery.ItemSelector[j].TextSuffix
 			}
 			mapData[doc.selectorQuery.ItemSelector[j].Key] = value
+			if "" != doc.selectorQuery.ItemSelector[j].Attr {
+				attr = selection.Find(doc.selectorQuery.ItemSelector[j].SelectorQuery).First().AttrOr(doc.selectorQuery.ItemSelector[j].Attr, "")
+				if "" != doc.selectorQuery.ItemSelector[j].AttrPrefix {
+					attr = doc.selectorQuery.ItemSelector[j].AttrPrefix + attr
+				}
+				if "" != doc.selectorQuery.ItemSelector[j].AttrSuffix {
+					attr = attr + doc.selectorQuery.ItemSelector[j].AttrSuffix
+				}
+				mapData[doc.selectorQuery.ItemSelector[j].Key] = attr
+			}
 		}
 		result = append(result, mapData)
 	})

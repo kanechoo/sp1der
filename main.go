@@ -41,9 +41,9 @@ func main() {
 	processor.Source(&channel.HtmlDocChannel).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
 		doc := Doc{}
 		result := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
-			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic}}).ToResult()
+			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic, v2ex.Link}}).ToResult()
 		//export result to csv
-		util.ExportToCSV(result, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题"})
+		util.ExportToCSV(result, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
 	})
 	wg.Wait()
 }
