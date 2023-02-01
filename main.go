@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"sp1der/channel"
-	"sp1der/distributor"
-	"sp1der/process"
+	"sp1der/dist"
+	"sp1der/unit"
 	"sp1der/util"
 	"sync"
 	"time"
@@ -16,7 +16,7 @@ func main() {
 	defer timer("main")()
 	// start url distribute
 	var page = 0
-	d := distributor.Distributor{}
+	d := dist.Distributor{}
 	d.UrlChan(&channel.UrlChan).NextUrlFunc(func() string {
 		if page < 1 {
 			page++
@@ -28,10 +28,10 @@ func main() {
 		RequestSleepTime(2 * time.Second).
 		DocumentChan(&channel.DocumentChan).
 		Distribute()
-	processor := process.Processor{}
-	//my processor
+	processor := unit.Processor{}
+	//my unit
 	/*items := make([]map[string]string, 0)
-	processor.DocumentChan(&channel.DocumentChan).Parallel(10).SyncWaitGroup(&wg).CallBack(func(s *[]byte) {
+	unit.DocumentChan(&channel.DocumentChan).Parallel(10).SyncWaitGroup(&wg).CallBack(func(s *[]byte) {
 		doc := docs.DocumentParser{}
 		item := doc.ToDoc(s).SelectorYamlFile("resources/v2ex.yaml").executeSelectorQuery()
 		items = append(items, *item...)
@@ -40,8 +40,8 @@ func main() {
 		SyncWaitGroup(&wg).
 		SelectorYamlFile("resources/v2ex.yaml").ExecuteSelectorQuery()
 	wg.Wait()
-	//wait all process done then export csv
-	util.ExportToCSV(items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
+	//wait all unit done then export csv
+	util.ExportToCsv(items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
 }
 func timer(name string) func() {
 	start := time.Now()

@@ -1,4 +1,4 @@
-package process
+package unit
 
 import (
 	"sp1der/docs"
@@ -54,7 +54,7 @@ loop:
 	for {
 		select {
 		case data := <-*p.documentChan:
-			//execute next processor chain
+			//execute next unit chain
 			f(&data)
 		case <-time.After(10 * time.Second):
 			break loop

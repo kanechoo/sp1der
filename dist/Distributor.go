@@ -1,4 +1,4 @@
-package distributor
+package dist
 
 import (
 	"fmt"

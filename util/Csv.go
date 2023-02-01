@@ -6,14 +6,7 @@ import (
 	"os"
 )
 
-func ExportToCSVV2(data *[][]map[string]string, path string, headers []string) {
-	list := make([]map[string]string, 0)
-	for _, item := range *data {
-		list = append(list, item...)
-	}
-	ExportToCSV(&list, path, headers)
-}
-func ExportToCSV(data *[]map[string]string, path string, headers []string) {
+func ExportToCsv(data *[]map[string]string, path string, headers []string) {
 	//get titles names
 	if nil == data || len(*data) <= 0 {
 		return

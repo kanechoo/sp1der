@@ -1,2 +1,2 @@
 # sp1der
-golang practice
+A most simple spider program for golang practice
