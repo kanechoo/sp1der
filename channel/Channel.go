@@ -1,4 +1,4 @@
 package channel
 
-var HttpUrlChannel = make(chan string, 20)
-var HtmlDocChannel = make(chan []byte, 10)
+var UrlChan = make(chan string, 20)
+var DocumentChan = make(chan []byte, 10)

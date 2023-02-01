@@ -29,7 +29,7 @@ func (e *HttpExecutor) ParallelExecutorSize(parallelSize int) *HttpExecutor {
 	e.parallelSize = &parallelSize
 	return e
 }
-func (e *HttpExecutor) Sync(wg *sync.WaitGroup) *HttpExecutor {
+func (e *HttpExecutor) SyncWaitGroup(wg *sync.WaitGroup) *HttpExecutor {
 	e.wg = wg
 	return e
 }
@@ -54,10 +54,33 @@ loop:
 		select {
 		case v := <-*e.sourceChan:
 			fmt.Printf("HttpClient request url : %s\n", v)
-			res := util.HttpGet(e.httpClient, v, *e.sleepTime)
-			*e.targetChan <- *res
+			oneRequest := func() (*[]byte, error) {
+				return util.HttpGet(e.httpClient, v)
+			}
+			res, err := tryToRequest(3, oneRequest)
+			if nil != err {
+				fmt.Printf("Can't get any response from : %s\n", v)
+			} else {
+				*e.targetChan <- *res
+			}
+			time.Sleep(*e.sleepTime)
 		case <-time.After(10 * time.Second):
 			break loop
 		}
 	}
+}
+
+func tryToRequest(tryTimes int, fun func() (*[]byte, error)) (*[]byte, error) {
+	b := make([]byte, 0)
+	var newErr error = nil
+	for i := 1; i < tryTimes; i++ {
+		result, err := fun()
+		if nil != err {
+			newErr = err
+			continue
+		} else {
+			return result, nil
+		}
+	}
+	return &b, newErr
 }

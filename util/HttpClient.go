@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"time"
 )
 
 func DefaultHttpClient() *http.Client {
@@ -23,25 +22,26 @@ func DefaultHttpClient() *http.Client {
 	}
 	return client
 }
-func HttpGet(client *http.Client, url string, sleepTime time.Duration) *[]byte {
-	time.Sleep(sleepTime)
-	r, err := http.NewRequest(http.MethodGet, url, nil)
-	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
-	r.Header.Set("Referer", parseRefererFromUrl(url))
-	r.Header.Set("Content-Type", "text/html")
+
+func HttpGet(client *http.Client, url string) (*[]byte, error) {
+	newRequest, err := http.NewRequest(http.MethodGet, url, nil)
+	newRequest.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
+	newRequest.Header.Set("Referer", parseRefererFromUrl(url))
+	newRequest.Header.Set("Content-Type", "text/html")
+	responseByte := make([]byte, 0)
 	if nil != err {
-		panic(err)
+		return &responseByte, err
 	}
-	res, err := client.Do(r)
+	res, err := client.Do(newRequest)
 	defer res.Body.Close()
 	if nil != err {
-		panic(err)
+		return &responseByte, err
 	}
 	b, err := io.ReadAll(res.Body)
 	if nil != err {
-		panic(err)
+		return &responseByte, err
 	}
-	return &b
+	return &b, nil
 }
 func parseRefererFromUrl(url string) string {
 	re := regexp.MustCompile(`^(https?://[^/]+)/`)

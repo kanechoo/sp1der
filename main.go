@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"sp1der/channel"
 	"sp1der/distributor"
-	"sp1der/models"
 	"sp1der/process"
-	"sp1der/task"
 	"sp1der/util"
-	"sp1der/v2ex"
 	"sync"
 	"time"
 )
@@ -18,35 +15,33 @@ var wg = sync.WaitGroup{}
 func main() {
 	defer timer("main")()
 	// start url distribute
-	var max = 0
+	var page = 0
 	d := distributor.Distributor{}
-	d.UrlReceivedChannel(&channel.HttpUrlChannel).NextUrlFunc(func() string {
-		if max < 1 {
-			max++
-			return fmt.Sprintf("https://www.v2ex.com/recent?p=%d", max)
+	d.UrlChan(&channel.UrlChan).NextUrlFunc(func() string {
+		if page < 1 {
+			page++
+			return fmt.Sprintf("https://www.v2ex.com/recent?p=%d", page)
 		}
 		return ""
-	})
-	//start all executor
-	executor := task.HttpExecutor{}
-	executor.HttpClient(util.DefaultHttpClient()).
-		ParallelExecutorSize(10).
-		SleepDuration(2 * time.Second).
-		Sync(&wg).UrlChannel(&channel.HttpUrlChannel).
-		ResultChannel(&channel.HtmlDocChannel).Run()
-	//start to process extract result
+	}).SyncWaitGroup(&wg).
+		HttpClientPoolSize(10).
+		RequestSleepTime(2 * time.Second).
+		DocumentChan(&channel.DocumentChan).
+		Distribute()
 	processor := process.Processor{}
-	items := make([][]map[string]string, 0)
 	//my processor
-	processor.Source(&channel.HtmlDocChannel).ParallelSize(10).Sync(&wg).Run(func(s *[]byte) {
-		doc := Doc{}
-		item := doc.ToDoc(s).AddSelectorQuery(models.SelectorQuery{
-			ParentSelector: "div.box > div.item", ItemSelector: []models.Selector{v2ex.Title, v2ex.CommentCount, v2ex.Author, v2ex.Topic, v2ex.Link}}).ToResult()
-		items = append(items, *item)
-	})
+	/*items := make([]map[string]string, 0)
+	processor.DocumentChan(&channel.DocumentChan).Parallel(10).SyncWaitGroup(&wg).CallBack(func(s *[]byte) {
+		doc := docs.DocumentParser{}
+		item := doc.ToDoc(s).SelectorYamlFile("resources/v2ex.yaml").executeSelectorQuery()
+		items = append(items, *item...)
+	})*/
+	items := processor.DocumentChan(&channel.DocumentChan).Parallel(10).
+		SyncWaitGroup(&wg).
+		SelectorYamlFile("resources/v2ex.yaml").ExecuteSelectorQuery()
 	wg.Wait()
 	//wait all process done then export csv
-	util.ExportToCSVV2(&items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
+	util.ExportToCSV(items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
 }
 func timer(name string) func() {
 	start := time.Now()

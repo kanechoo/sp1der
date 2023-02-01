@@ -1,31 +1,50 @@
 package process
 
 import (
+	"sp1der/docs"
 	"sync"
 	"time"
 )
 
 type Processor struct {
-	sourceChan   *chan []byte
+	documentChan *chan []byte
 	parallelSize *int
 	wg           *sync.WaitGroup
+	file         *string
 }
 
-func (p *Processor) Source(pullChan *chan []byte) *Processor {
-	p.sourceChan = pullChan
+func (p *Processor) DocumentChan(documentChan *chan []byte) *Processor {
+	p.documentChan = documentChan
 	return p
 }
-func (p *Processor) Run(f func(s *[]byte)) {
+func (p *Processor) CallBack(f func(s *[]byte)) {
 	for i := 0; i < *p.parallelSize; i++ {
 		p.wg.Add(1)
 		go p.execute(f)
 	}
 }
-func (p *Processor) ParallelSize(parallelSize int) *Processor {
+func (p *Processor) Parallel(parallelSize int) *Processor {
 	p.parallelSize = &parallelSize
 	return p
 }
-func (p *Processor) Sync(wg *sync.WaitGroup) *Processor {
+func (p *Processor) SelectorYamlFile(file string) *Processor {
+	p.file = &file
+	return p
+}
+func (p *Processor) ExecuteSelectorQuery() *[]map[string]string {
+	items := make([]map[string]string, 0)
+	for i := 0; i < *p.parallelSize; i++ {
+		p.wg.Add(1)
+		go p.execute(func(s *[]byte) {
+			doc := docs.DocumentParser{}
+			item := doc.ToDoc(s).SelectorYamlFile(*p.file).ExecuteSelectorQuery()
+			items = append(items, *item...)
+		})
+	}
+	p.wg.Wait()
+	return &items
+}
+func (p *Processor) SyncWaitGroup(wg *sync.WaitGroup) *Processor {
 	p.wg = wg
 	return p
 }
@@ -34,7 +53,7 @@ func (p *Processor) execute(f func(s *[]byte)) {
 loop:
 	for {
 		select {
-		case data := <-*p.sourceChan:
+		case data := <-*p.documentChan:
 			//execute next processor chain
 			f(&data)
 		case <-time.After(10 * time.Second):

@@ -1,0 +1,17 @@
+name: V2ex
+home: https://www.v2ex.com
+description: way to explore
+item-selector: div.box > div.item
+selectors:
+  - selector: a.topic-link
+    name: 标题
+  - selector: a.count_livid
+    name: 评论数
+  - selector: span.topic_info > strong:nth-child(3) > a
+    name: 作者
+  - selector: span.topic_info > a
+    name: 话题
+  - selector: a.topic-link
+    name:   链接
+    attr: href
+    attr-prefix: https://www.v2ex.com
