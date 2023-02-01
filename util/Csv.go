@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func ExportToCsv(data *[]map[string]string, path string, headers []string) {
+func CsvExport(data *[]map[string]string, exportToFile string, headers []string) {
 	//get titles names
 	if nil == data || len(*data) <= 0 {
 		return
@@ -27,7 +27,7 @@ func ExportToCsv(data *[]map[string]string, path string, headers []string) {
 		}
 		records = append(records, record)
 	}
-	file, err := os.Create(path)
+	file, err := os.Create(exportToFile)
 	if err != nil {
 		fmt.Printf("Create file error : %s", err.Error())
 		return

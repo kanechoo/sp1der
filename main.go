@@ -41,7 +41,7 @@ func main() {
 		SelectorYamlFile("resources/v2ex.yaml").ExecuteSelectorQuery()
 	wg.Wait()
 	//wait all unit done then export csv
-	util.ExportToCsv(items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
+	util.CsvExport(items, "/Users/konchoo/Downloads/test.csv", []string{"标题", "评论数", "作者", "话题", "链接"})
 }
 func timer(name string) func() {
 	start := time.Now()
