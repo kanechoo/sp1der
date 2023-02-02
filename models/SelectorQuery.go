@@ -3,7 +3,7 @@ package models
 type SelectorQuery struct {
 	Name         string `yaml:"name"`
 	Home         string `yaml:"home"`
-	Description  string `yaml:"description"`
+	Description  string `yaml:"Description"`
 	ItemSelector string `yaml:"item-selector"`
 	Selectors    []struct {
 		TextSelector string `yaml:"selector"`
