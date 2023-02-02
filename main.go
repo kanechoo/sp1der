@@ -66,14 +66,14 @@ func startTask(taskConfig models.TaskConfig, fun func() string) {
 	if nil == fun {
 		panic("Url generate func must be define")
 	}
-	worker := dist.HttpWalker{
+	walker := dist.HttpWalker{
 		SleepTime:          time.Duration(taskConfig.SleepSecond) * time.Second,
 		UrlChan:            &channel.UrlChan,
 		WaitGroup:          &wg,
 		DocumentChan:       &channel.DocumentChan,
 		HttpClientPoolSize: taskConfig.HttpClientPoolSize,
 	}
-	worker.UrlStoreChan(&channel.UrlChan).UrlGenerateFunc(fun).Walk()
+	walker.SetUrlGenerateFunc(fun).Walk()
 	processor := unit.Processor{
 		DocumentChan:     &channel.DocumentChan,
 		ParallelSize:     taskConfig.ProcessorPoolSize,

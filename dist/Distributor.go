@@ -60,7 +60,7 @@ func (d *HttpWalker) Walk() {
 		SyncWaitGroup(d.WaitGroup).UrlChannel(d.UrlChan).
 		ResultChannel(d.DocumentChan).Run()
 }
-func (d *HttpWalker) UrlGenerateFunc(f func() string) *HttpWalker {
+func (d *HttpWalker) SetUrlGenerateFunc(f func() string) *HttpWalker {
 	if nil == d.UrlChan {
 		panic("Please defined a url channel for the HttpWalker struct first then run this function")
 	}
