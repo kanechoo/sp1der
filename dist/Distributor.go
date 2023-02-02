@@ -8,61 +8,61 @@ import (
 	"time"
 )
 
-type Distributor struct {
-	urlChan            *chan string
-	httpClientPoolSize *int
-	documentChan       *chan []byte
-	waitGroup          *sync.WaitGroup
-	requestSleepTime   *time.Duration
+type HttpWalker struct {
+	UrlChan            *chan string
+	HttpClientPoolSize int
+	DocumentChan       *chan []byte
+	WaitGroup          *sync.WaitGroup
+	SleepTime          time.Duration
 }
 
-func (d *Distributor) UrlChan(urlChannel *chan string) *Distributor {
-	d.urlChan = urlChannel
+func (d *HttpWalker) UrlStoreChan(urlChannel *chan string) *HttpWalker {
+	d.UrlChan = urlChannel
 	return d
 }
-func (d *Distributor) HttpClientPoolSize(size int) *Distributor {
-	d.httpClientPoolSize = &size
+func (d *HttpWalker) SetHttpClientPoolSize(size int) *HttpWalker {
+	d.HttpClientPoolSize = size
 	return d
 }
-func (d *Distributor) SyncWaitGroup(waitGroup *sync.WaitGroup) *Distributor {
-	d.waitGroup = waitGroup
+func (d *HttpWalker) SetWaitGroup(waitGroup *sync.WaitGroup) *HttpWalker {
+	d.WaitGroup = waitGroup
 	return d
 }
-func (d *Distributor) RequestSleepTime(duration time.Duration) *Distributor {
-	d.requestSleepTime = &duration
+func (d *HttpWalker) SetSleepTime(duration time.Duration) *HttpWalker {
+	d.SleepTime = duration
 	return d
 }
-func (d *Distributor) DocumentChan(documentChan *chan []byte) *Distributor {
-	d.documentChan = documentChan
+func (d *HttpWalker) SetDocumentChan(documentChan *chan []byte) *HttpWalker {
+	d.DocumentChan = documentChan
 	return d
 }
-func (d *Distributor) Distribute() {
+func (d *HttpWalker) Walk() {
 	//check param
-	if nil == d.urlChan {
-		panic(fmt.Sprintf("You must be define urlChan if you want to start distribute"))
+	if nil == d.UrlChan {
+		panic(fmt.Sprintf("You must be define UrlChan if you want to start distribute"))
 	}
-	if nil == d.waitGroup {
+	if nil == d.WaitGroup {
 		panic(fmt.Sprintf("You must be define waitGrop if you want to start distribute"))
 	}
-	if nil == d.httpClientPoolSize {
-		panic(fmt.Sprintf("You must be define httpClientPoolSize if you want to start distribute"))
+	if nil == &d.HttpClientPoolSize {
+		panic(fmt.Sprintf("You must be define HttpClientPoolSize if you want to start distribute"))
 	}
-	if nil == d.requestSleepTime {
-		panic(fmt.Sprintf("You must be define requestSleepTime if you want to start distribute"))
+	if nil == &d.SleepTime {
+		panic(fmt.Sprintf("You must be define SleepTime if you want to start distribute"))
 	}
-	if nil == d.documentChan {
-		panic(fmt.Sprintf("You must be define documentChan if you want to start distribute"))
+	if nil == d.DocumentChan {
+		panic(fmt.Sprintf("You must be define DocumentChan if you want to start distribute"))
 	}
 	executor := task.HttpExecutor{}
 	executor.HttpClient(util.DefaultHttpClient()).
-		ParallelExecutorSize(*d.httpClientPoolSize).
-		SleepDuration(*d.requestSleepTime).
-		SyncWaitGroup(d.waitGroup).UrlChannel(d.urlChan).
-		ResultChannel(d.documentChan).Run()
+		ParallelExecutorSize(d.HttpClientPoolSize).
+		SleepDuration(d.SleepTime).
+		SyncWaitGroup(d.WaitGroup).UrlChannel(d.UrlChan).
+		ResultChannel(d.DocumentChan).Run()
 }
-func (d *Distributor) NextUrlFunc(f func() string) *Distributor {
-	if nil == d.urlChan {
-		panic("Please defined a url channel for the Distributor struct first then run this function")
+func (d *HttpWalker) UrlGenerateFunc(f func() string) *HttpWalker {
+	if nil == d.UrlChan {
+		panic("Please defined a url channel for the HttpWalker struct first then run this function")
 	}
 	go func() {
 		for {
@@ -71,8 +71,7 @@ func (d *Distributor) NextUrlFunc(f func() string) *Distributor {
 				break
 			}
 			select {
-			case *d.urlChan <- s:
-				fmt.Printf("Added request url to chan : %s\n", s)
+			case *d.UrlChan <- s:
 			case <-time.After(30 * time.Second):
 				fmt.Printf("Timeout\n")
 			}

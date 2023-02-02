@@ -53,7 +53,7 @@ loop:
 	for {
 		select {
 		case v := <-*e.sourceChan:
-			fmt.Printf("HttpClient request url : %s\n", v)
+			fmt.Printf("Request : %s\n", v)
 			oneRequest := func() (*[]byte, error) {
 				return util.HttpGet(e.httpClient, v)
 			}
@@ -77,6 +77,7 @@ func tryToRequest(tryTimes int, fun func() (*[]byte, error)) (*[]byte, error) {
 		result, err := fun()
 		if nil != err {
 			newErr = err
+			time.Sleep(200 * time.Millisecond)
 			continue
 		} else {
 			return result, nil
