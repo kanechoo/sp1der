@@ -1,6 +1,6 @@
 package models
 
-type TaskConfig struct {
+type TaskConfigure struct {
 	Website               string
 	HttpClientPoolSize    int
 	SleepSecond           int

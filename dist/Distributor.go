@@ -3,7 +3,7 @@ package dist
 import (
 	"fmt"
 	"sp1der/task"
-	"sp1der/util"
+	"sp1der/util/httpv2"
 	"sync"
 	"time"
 )
@@ -54,7 +54,7 @@ func (d *HttpWalker) Walk() {
 		panic(fmt.Sprintf("You must be define DocumentChan if you want to start distribute"))
 	}
 	executor := task.HttpExecutor{}
-	executor.HttpClient(util.DefaultHttpClient()).
+	executor.HttpClient(httpv2.Client()).
 		ParallelExecutorSize(d.HttpClientPoolSize).
 		SleepDuration(d.SleepTime).
 		SyncWaitGroup(d.WaitGroup).UrlChannel(d.UrlChan).
@@ -72,6 +72,7 @@ func (d *HttpWalker) SetUrlGenerateFunc(f func() string) *HttpWalker {
 			}
 			select {
 			case *d.UrlChan <- s:
+				fmt.Printf("Added Url : %s\n", s)
 			case <-time.After(30 * time.Second):
 				fmt.Printf("Timeout\n")
 			}

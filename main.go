@@ -8,7 +8,7 @@ import (
 	"sp1der/dist"
 	"sp1der/models"
 	"sp1der/unit"
-	"sp1der/util"
+	"sp1der/util/csv"
 	"sync"
 	"time"
 )
@@ -16,7 +16,7 @@ import (
 var wg = sync.WaitGroup{}
 
 // GetUrlGenerateFunc edit this func impl url generate func for every website
-func GetUrlGenerateFunc(website string) func() string {
+func GetUrlGenerateFunc(websiteName string) func() string {
 	var page = 0
 	v2exFunc := func() string {
 		if page < 40 {
@@ -29,7 +29,7 @@ func GetUrlGenerateFunc(website string) func() string {
 	m := map[string]func() string{
 		"v2ex": v2exFunc,
 	}
-	return m[website]
+	return m[websiteName]
 }
 func main() {
 	file, err := os.ReadFile("resources/spider.yaml")
@@ -43,7 +43,7 @@ func main() {
 	}
 	for _, website := range config.Websites {
 		if true == website.Enabled {
-			taskConfig := models.TaskConfig{
+			taskConfig := models.TaskConfigure{
 				HttpClientPoolSize:    website.Walker.HttpClientPoolSize,
 				SleepSecond:           website.Walker.SleepSecond,
 				ProcessorPoolSize:     website.Processor.ProcessorPoolSize,
@@ -61,27 +61,27 @@ func timer(name string) func() {
 		fmt.Printf("%s took %v\n", name, time.Since(start))
 	}
 }
-func startTask(taskConfig models.TaskConfig, fun func() string) {
-	defer timer(taskConfig.Website)()
+func startTask(taskConfigure models.TaskConfigure, fun func() string) {
+	defer timer(taskConfigure.Website)()
 	if nil == fun {
 		panic("Url generate func must be define")
 	}
 	walker := dist.HttpWalker{
-		SleepTime:          time.Duration(taskConfig.SleepSecond) * time.Second,
+		SleepTime:          time.Duration(taskConfigure.SleepSecond) * time.Second,
 		UrlChan:            &channel.UrlChan,
 		WaitGroup:          &wg,
 		DocumentChan:       &channel.DocumentChan,
-		HttpClientPoolSize: taskConfig.HttpClientPoolSize,
+		HttpClientPoolSize: taskConfigure.HttpClientPoolSize,
 	}
 	walker.SetUrlGenerateFunc(fun).Walk()
 	processor := unit.Processor{
 		DocumentChan:     &channel.DocumentChan,
-		ParallelSize:     taskConfig.ProcessorPoolSize,
+		ParallelSize:     taskConfigure.ProcessorPoolSize,
 		WaitGroup:        &wg,
-		SelectorYamlFile: taskConfig.ProcessorSelectorFile,
+		SelectorYamlFile: taskConfigure.ProcessorSelectorFile,
 	}
 	items := processor.ExecuteSelectorQuery()
 	wg.Wait()
 	//wait all unit done then export csv
-	util.CsvExport(items, taskConfig.ExportCsvLocation)
+	csv.Export(items, taskConfigure.ExportCsvLocation)
 }

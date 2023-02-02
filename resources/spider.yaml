@@ -1,22 +1,29 @@
 # Spider configuration for all web site
 
 website-list:
-  # website name
+  # website item
   - website-name: v2ex
     enabled: true
-    # website description
-    description: website comment
-    # http walker config
+    description: get some v2ex list
     walker:
-      # http walker sleep time when once request done
       sleep-second: 2
-      # parallel httpclient request number of httpclient
       http-client-pool-size: 10
     processor:
-      # parallel processing html document number of processor
       processor-pool-size: 10
       processor-selector-file: resources/v2ex.yaml
     export-location:
-      csv: /Users/konchoo/Downloads/test1.csv
+      csv: /Users/konchoo/Downloads/v2ex.csv
+  # website item
+  - website-name: example
+    enabled: false
+    description: example.com
+    walker:
+      sleep-second: 2
+      http-client-pool-size: 10
+    processor:
+      processor-pool-size: 10
+      processor-selector-file: resources/example.yaml
+    export-location:
+      csv: /Users/konchoo/Downloads/example.csv
 
 

@@ -1,29 +1,33 @@
-package util
+package httpv2
 
 import (
 	"io"
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 )
 
-func DefaultHttpClient() *http.Client {
+func Client() *http.Client {
 	proxy, err := url.Parse("http://127.0.0.1:1081")
 	if nil != err {
 		panic(err)
 	}
 	tr := &http.Transport{
-		DisableKeepAlives:  false,
-		DisableCompression: true,
-		Proxy:              http.ProxyURL(proxy),
+		DisableKeepAlives:   false,
+		DisableCompression:  true,
+		Proxy:               http.ProxyURL(proxy),
+		TLSHandshakeTimeout: 5 * time.Second,
+		IdleConnTimeout:     3 * time.Second,
 	}
 	client := &http.Client{
 		Transport: tr,
+		Timeout:   5 * time.Second,
 	}
 	return client
 }
 
-func HttpGet(client *http.Client, url string) (*[]byte, error) {
+func GetRequest(client *http.Client, url string) (*[]byte, error) {
 	newRequest, err := http.NewRequest(http.MethodGet, url, nil)
 	newRequest.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")
 	newRequest.Header.Set("Referer", parseRefererFromUrl(url))

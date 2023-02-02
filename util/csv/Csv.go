@@ -1,4 +1,4 @@
-package util
+package csv
 
 import (
 	"encoding/csv"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func CsvExport(data *[]map[string]string, exportToFile string, headers ...string) {
+func Export(data *[]map[string]string, exportToFile string, headers ...string) {
 	//get titles names
 	if nil == data || len(*data) <= 0 {
 		return

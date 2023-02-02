@@ -3,7 +3,7 @@ package task
 import (
 	"fmt"
 	"net/http"
-	"sp1der/util"
+	"sp1der/util/httpv2"
 	"sync"
 	"time"
 )
@@ -55,7 +55,7 @@ loop:
 		case v := <-*e.sourceChan:
 			fmt.Printf("Request : %s\n", v)
 			oneRequest := func() (*[]byte, error) {
-				return util.HttpGet(e.httpClient, v)
+				return httpv2.GetRequest(e.httpClient, v)
 			}
 			res, err := tryToRequest(3, oneRequest)
 			if nil != err {
